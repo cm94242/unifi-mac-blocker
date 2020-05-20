@@ -62,7 +62,7 @@ async function main() : Promise<void> {
     const config = get_configuration(args.config)
     const client = new UBNTClient.UBNTClient(config.url, config.site, config.login, config.password)
 
-    for (const mac of config.macs){
+    for (const mac of Object.values(config.macs)){
         const success = await ensure_state(client, desired, mac)
         console.log(success)
     }
