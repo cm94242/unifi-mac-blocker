@@ -37,7 +37,7 @@ export class UBNTClient {
     }
 
     async login() {
-        let resp = await this.client.create("/api/login", this.auth)
+        let resp : {[index: string]:any} = await this.client.create("/api/login", this.auth)
         let cookies = resp.headers['set-cookie']
         let reqOpts:restm.IRequestOptions = {
             additionalHeaders:  {cookie: cookies}
@@ -61,6 +61,11 @@ export class UBNTClient {
     async isBlocked(mac:String):Promise<boolean> {
         let auth = await this.login()
         let ret = await this.client.get<UBNTClientResponse>(`/api/s/${this.site}/stat/user/${mac}`, auth)
+
+        if (null == ret?.result) {
+            throw new Error("Invalid response")
+        }
+
         return ret.result.data[0].blocked
     }
 }

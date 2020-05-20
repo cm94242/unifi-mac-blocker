@@ -5,9 +5,17 @@
     "target": "es6",
     "lib": ["es6"],
     "sourceMap": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+
+    "skipLibCheck" : true,
+    "declaration" : true,
+    "noImplicitAny" : true,
+    "noImplicitReturns" : true,
+    "noImplicitThis" : true,
+    "strictNullChecks" : true
   },
   "exclude": [
+    "dist",
     "node_modules"
   ]
 }
