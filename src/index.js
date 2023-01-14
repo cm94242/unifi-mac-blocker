@@ -9,7 +9,7 @@ async function get_blocks(controller, config) {
         (v) => (config.names || []).includes(v.name),
         (v) => (config.essids || []).includes(v.essid),
         (v) => (config.networks || []).includes(v.network),
-        (v) => (config.macs || []).includes(v.mac),
+        (v) => (config.macs || []).map(v => v.toUpperCase()).includes(v.mac.toUpperCase()),
     ]
 
     const selector = (d) => selectors.some(s => s(d))
