@@ -2,14 +2,6 @@ const fs = require('fs')
 const unifi = require('node-unifi')
 const commander = require("commander");
 
-function dump_state(config, macs) {
-    const state = {
-        state: macs.length === 0 ? "OFF" : "ON",
-        macs
-    }
-    fs.writeFileSync(config.statefile, JSON.stringify(state, null, 4))
-}
-
 async function get_blocks(controller, config) {
     const devices = await controller.getClientDevices()
 
@@ -25,15 +17,6 @@ async function get_blocks(controller, config) {
     return devices.filter(selector)
 }
 
-function is_active(config) {
-    if (fs.existsSync(config.statefile)) {
-        const state = JSON.parse(fs.readFileSync(config.statefile))
-        return state.state === 'ON'
-    }
-
-    return false
-}
-
 async function unblock(controller, config) {
     const configured = await get_blocks(controller, config)
     const victims = await controller.getBlockedUsers()
@@ -41,23 +24,20 @@ async function unblock(controller, config) {
         console.log(`Unblocking: ${victim.name}/${victim.mac}`)
         await controller.unblockClient(victim.mac)
     }
-    dump_state(config, [])
 }
 
 async function block(controller, config) {
-    if (is_active(config)) {
-        return
-    }
     const victims = await get_blocks(controller, config)
-    dump_state(config, victims.map(v => v.mac))
     for (const victim of victims) {
         console.log(`Blocking: ${victim.name}/${victim.mac}`)
         await controller.blockClient(victim.mac)
     }
 }
 
-function state(controller, config) {
-    console.log(is_active(config) ? "ON" : "OFF")
+async function state(controller, config) {
+    const victims = await controller.getBlockedUsers()
+    const is_active = victims.length !== 0
+    console.log(is_active ? "ON" : "OFF")
 }
 
 function get_args() {
