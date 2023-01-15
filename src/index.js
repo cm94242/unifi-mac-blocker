@@ -5,11 +5,14 @@ const commander = require("commander");
 async function get_blocks(controller, config) {
     const devices = await controller.getClientDevices()
 
+    const normalize = (label) => {
+        return (config[label] || []).map(v => v.toUpperCase())
+    }
+
     const selectors = [
-        (v) => (config.names || []).includes(v.name),
-        (v) => (config.essids || []).includes(v.essid),
-        (v) => (config.networks || []).includes(v.network),
-        (v) => (config.macs || []).map(v => v.toUpperCase()).includes(v.mac.toUpperCase()),
+        (v) => normalize('names').includes(v?.name?.toUpperCase()),
+        (v) => normalize('essids').includes(v?.essid?.toUpperCase()),
+        (v) => normalize('networks').includes(v?.network?.toUpperCase()),
     ]
 
     const selector = (d) => selectors.some(s => s(d))
@@ -18,7 +21,12 @@ async function get_blocks(controller, config) {
 }
 
 async function unblock(controller, config) {
-    const configured = await get_blocks(controller, config)
+    const direct = (config.macs || [])
+    for (const mac of direct) {
+        console.log(`Unblocking: ${mac}`)
+        await controller.unblockClient(mac)
+    }	
+
     const victims = await controller.getBlockedUsers()
     for (const victim of victims) {
         console.log(`Unblocking: ${victim.name}/${victim.mac}`)
@@ -32,6 +40,13 @@ async function block(controller, config) {
         console.log(`Blocking: ${victim.name}/${victim.mac}`)
         await controller.blockClient(victim.mac)
     }
+
+    const direct = (config.macs || [])
+    for (const mac of direct) {
+        console.log(`Blocking: ${mac}`)
+        await controller.blockClient(mac)
+    }	
+
 }
 
 async function state(controller, config) {
